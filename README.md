@@ -94,7 +94,7 @@ Our multi-agent system processes content through these steps:
 ![PodcastAI Interface](./assets/project_preview.png)
 
 Our intuitive interface features:
-link=>https://audio-pod-converter.vercel.app/
+link=>https://ait-project.vercel.app/
 ### Source Section
 - Demo audio playback
 - File upload functionality
@@ -139,3 +139,4 @@ npm run build
 
 # Start production server
 npm run start
+
