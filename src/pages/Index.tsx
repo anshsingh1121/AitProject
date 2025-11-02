@@ -14,25 +14,39 @@ interface SourceFile {
 }
 
 const Index = () => {
-  const [files, setFiles] = useState<SourceFile[]>([
-    { 
-      id: '2', 
-      name: 'DEMO AUDIO', 
+  // 🔹 Optional demo files — include only if needed
+  const includeDemoAudio = true;           // set to false to disable demo
+  const includeRegionalAudio = true;       // set to false to disable regional audio
+
+  // 🔹 Build initial file list conditionally
+  const initialFiles: SourceFile[] = [];
+  if (includeDemoAudio) {
+    initialFiles.push({
+      id: '1',
+      name: 'DEMO AUDIO',
       content: 'This is a demo audio file with pre-loaded content.',
       audioUrl: 'https://res.cloudinary.com/dpyhcwi93/video/upload/v1743317667/combined_Conversation_vzkmvp.mp3'
-    }
-  ]);
-  const [activeFileId, setActiveFileId] = useState<string | null>('2');
-  const [audioUrl, setAudioUrl] = useState<string | null>(null);
+    });
+  }
+
+  if (includeRegionalAudio) {
+    initialFiles.push({
+      id: '2',
+      name: 'Regional Language Audio',
+      content: 'Regional language narration',
+      audioUrl: 'https://res.cloudinary.com/dpyhcwi93/video/upload/v1762101494/output_fprpaf.mp3'
+    });
+  }
+
+  const [files, setFiles] = useState<SourceFile[]>(initialFiles);
+  const [activeFileId, setActiveFileId] = useState<string | null>(initialFiles[0]?.id || null); // 🔹 handle empty case
+  const [audioUrl, setAudioUrl] = useState<string | null>(initialFiles[0]?.audioUrl || null);
   const [isConverting, setIsConverting] = useState(false);
 
   useEffect(() => {
-    const demoFile = files.find(file => file.id === '2');
-    if (demoFile?.audioUrl) {
-      setActiveFileId('2');
-      setAudioUrl(demoFile.audioUrl);
-    }
-    
+    if (files.length === 0) return;
+
+    // 🔹 automatically pick last audio file if available
     const audioFiles = files.filter(file => file.audioUrl);
     if (audioFiles.length > 0) {
       const lastAudioFile = audioFiles[audioFiles.length - 1];
@@ -43,7 +57,6 @@ const Index = () => {
 
   const handleFileSelect = async (fileId: string) => {
     setActiveFileId(fileId);
-    
     const selectedFile = files.find(file => file.id === fileId);
     if (!selectedFile) return;
     
@@ -58,7 +71,6 @@ const Index = () => {
     
     try {
       const result = await convertTextToSpeech(selectedFile.content);
-      
       if (result.success && result.audioUrl) {
         setAudioUrl(result.audioUrl);
       } else {
@@ -83,14 +95,11 @@ const Index = () => {
       };
       
       setFiles(prevFiles => [...prevFiles, newFile]);
-      
       setActiveFileId(newFile.id);
-      
       setIsConverting(true);
       setAudioUrl(null);
       
       const result = await convertTextToSpeech(content);
-      
       if (result.success && result.audioUrl) {
         setAudioUrl(result.audioUrl);
         toast.success(`${file.name} converted successfully!`);
@@ -111,13 +120,12 @@ const Index = () => {
       
       const newFile: SourceFile = {
         id: Date.now().toString(),
-        name: name,
+        name,
         content: `External audio from ${url}`,
         audioUrl: url
       };
       
       setFiles(prevFiles => [...prevFiles, newFile]);
-      
       setActiveFileId(newFile.id);
       setAudioUrl(url);
       
