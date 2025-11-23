@@ -4,13 +4,15 @@ import { toast } from "sonner";
 import Header from '../components/Header';
 import SourceSection from '../components/SourceSection';
 import AudioPlayer from '../components/AudioPlayer';
-import { convertTextToSpeech, readFileAsText } from '../utils/audioUtils';
+import { convertTextToSpeech, uploadFileForConversion } from '../utils/audioUtils';
 
 interface SourceFile {
   id: string;
   name: string;
   content: string;
   audioUrl?: string;
+  title?: string;
+  requestId?: string;
 }
 
 const Index = () => {
@@ -59,16 +61,16 @@ const Index = () => {
     setActiveFileId(fileId);
     const selectedFile = files.find(file => file.id === fileId);
     if (!selectedFile) return;
-    
+
     if (selectedFile.audioUrl) {
       setIsConverting(false);
       setAudioUrl(selectedFile.audioUrl);
       return;
     }
-    
+
     setIsConverting(true);
     setAudioUrl(null);
-    
+
     try {
       const result = await convertTextToSpeech(selectedFile.content);
       if (result.success && result.audioUrl) {
@@ -86,22 +88,26 @@ const Index = () => {
 
   const handleFileUpload = async (file: File) => {
     try {
-      const content = await readFileAsText(file);
-      
-      const newFile: SourceFile = {
-        id: Date.now().toString(),
-        name: file.name,
-        content
-      };
-      
-      setFiles(prevFiles => [...prevFiles, newFile]);
-      setActiveFileId(newFile.id);
       setIsConverting(true);
       setAudioUrl(null);
-      
-      const result = await convertTextToSpeech(content);
+
+      // Upload file to the API
+      const result = await uploadFileForConversion(file);
+
       if (result.success && result.audioUrl) {
+        const newFile: SourceFile = {
+          id: Date.now().toString(),
+          name: file.name,
+          content: result.title || file.name,
+          audioUrl: result.audioUrl,
+          title: result.title,
+          requestId: result.requestId
+        };
+
+        setFiles(prevFiles => [...prevFiles, newFile]);
+        setActiveFileId(newFile.id);
         setAudioUrl(result.audioUrl);
+
         toast.success(`${file.name} converted successfully!`);
       } else {
         toast.error(result.error || 'Conversion failed');
@@ -117,18 +123,18 @@ const Index = () => {
   const handleAddAudioUrl = (url: string, name: string) => {
     try {
       new URL(url);
-      
+
       const newFile: SourceFile = {
         id: Date.now().toString(),
         name,
         content: `External audio from ${url}`,
         audioUrl: url
       };
-      
+
       setFiles(prevFiles => [...prevFiles, newFile]);
       setActiveFileId(newFile.id);
       setAudioUrl(url);
-      
+
       toast.success(`Added "${name}" successfully!`);
     } catch (error) {
       console.error('Invalid URL:', error);
@@ -144,18 +150,18 @@ const Index = () => {
     <div className="min-h-screen bg-gradient-to-b from-white to-podcast-light">
       <div className="max-w-md mx-auto p-6">
         <Header />
-        
+
         <main>
-          <SourceSection 
+          <SourceSection
             files={files}
             activeFileId={activeFileId}
             onFileSelect={handleFileSelect}
             onFileUpload={handleFileUpload}
             onAddAudioUrl={handleAddAudioUrl}
           />
-          
-          <AudioPlayer 
-            audioUrl={audioUrl} 
+
+          <AudioPlayer
+            audioUrl={audioUrl}
             fileName={activeFileName}
             isLoading={isConverting}
             subtitles={activeContent}

@@ -1,29 +1,70 @@
 
-// This would normally be integrated with a real backend service
-// For now we'll just simulate the text-to-speech conversion
+// API endpoint for file conversion
+const API_ENDPOINT = 'https://echo-backend-623078948634.europe-west1.run.app/api/convert';
 
 export interface ConversionResult {
   success: boolean;
   audioUrl?: string;
+  title?: string;
+  requestId?: string;
   error?: string;
 }
 
+/**
+ * Upload file to the backend API for conversion to audio
+ * @param file - The file to upload
+ * @param hostUrl - The host URL (optional, defaults to 'string')
+ * @returns ConversionResult with audioUrl, title, and requestId
+ */
+export const uploadFileForConversion = async (file: File, hostUrl: string = 'string'): Promise<ConversionResult> => {
+  try {
+    const formData = new FormData();
+    formData.append('file', file);
+    formData.append('host_url', hostUrl);
+    
+    const response = await fetch(API_ENDPOINT, {
+      method: 'POST',
+      headers: {
+        'accept': 'application/json',
+      },
+      body: formData,
+    });
+    
+    if (!response.ok) {
+      throw new Error(`HTTP error! status: ${response.status}`);
+    }
+    
+    const data = await response.json();
+    
+    if (data.success && data.audioUrl) {
+      return {
+        success: true,
+        audioUrl: data.audioUrl,
+        title: data.title,
+        requestId: data.requestId,
+      };
+    } else {
+      return {
+        success: false,
+        error: 'Conversion failed: Invalid response from server',
+      };
+    }
+  } catch (error) {
+    console.error('Error uploading file for conversion:', error);
+    return {
+      success: false,
+      error: error instanceof Error ? error.message : 'Failed to upload file. Please try again.',
+    };
+  }
+};
+
+// Legacy function for backward compatibility (kept for demo audio)
 export const convertTextToSpeech = async (text: string): Promise<ConversionResult> => {
   // Simulate a delay like we're waiting for the server to process
   await new Promise(resolve => setTimeout(resolve, 2000));
   
   try {
-    // In a real app, this would be an API call to your backend
-    // Something like:
-    // const response = await fetch('/api/convert', {
-    //   method: 'POST',
-    //   headers: { 'Content-Type': 'application/json' },
-    //   body: JSON.stringify({ text })
-    // });
-    // const data = await response.json();
-    // return data;
-    
-    // Instead, we're returning a demo audio from Google Drive
+    // Legacy demo audio
     return {
       success: true,
       audioUrl: 'https://drive.google.com/uc?export=download&id=150-O1iKysYz9VGVfojgCm8-M6sLl-oDT'
