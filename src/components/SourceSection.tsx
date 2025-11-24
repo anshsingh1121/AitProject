@@ -32,7 +32,7 @@ const SourceSection: React.FC<SourceSectionProps> = ({
         <div className="space-y-2 min-h-[180px]">
           {files.length === 0 ? (
             <div className="text-center py-6 text-gray-400 italic text-sm">
-              Upload a text file to convert to audio
+              Upload a document to convert to audio
             </div>
           ) : (
             files.map((file) => (

@@ -31,7 +31,7 @@ const UploadButton: React.FC<UploadButtonProps> = ({ onFileSelect }) => {
         <span className="text-sm text-podcast-accent">UPLOAD</span>
         <span className="ml-auto">
           <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-podcast-accent">
-            <path d="m9 18 6-6-6-6"/>
+            <path d="m9 18 6-6-6-6" />
           </svg>
         </span>
       </button>
@@ -39,7 +39,7 @@ const UploadButton: React.FC<UploadButtonProps> = ({ onFileSelect }) => {
         type="file"
         ref={fileInputRef}
         onChange={handleFileChange}
-        accept=".txt,.md"
+        accept=".txt,.md,.pdf,.doc,.docx,.ppt,.pptx"
         className="hidden"
       />
     </div>
