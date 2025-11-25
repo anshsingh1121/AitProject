@@ -5,7 +5,7 @@ const API_ENDPOINT = 'https://echo-backend-623078948634.europe-west1.run.app/api
 export interface ConversionResult {
   success: boolean;
   audioUrl?: string;
-  scriptUrl?: string;
+  transcriptUrl?: string;
   title?: string;
   requestId?: string;
   error?: string;
@@ -41,7 +41,7 @@ export const uploadFileForConversion = async (file: File, hostUrl: string = 'str
       return {
         success: true,
         audioUrl: data.audioUrl,
-        scriptUrl: data.scriptUrl,
+        transcriptUrl: data.transcriptUrl,
         title: data.title,
         requestId: data.requestId,
       };

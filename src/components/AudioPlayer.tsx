@@ -8,7 +8,7 @@ interface AudioPlayerProps {
   fileName: string;
   isLoading?: boolean;
   subtitles?: string;
-  scriptUrl?: string;
+  transcriptUrl?: string;
 }
 
 const AudioPlayer: React.FC<AudioPlayerProps> = ({
@@ -16,7 +16,7 @@ const AudioPlayer: React.FC<AudioPlayerProps> = ({
   fileName,
   isLoading = false,
   subtitles = '',
-  scriptUrl
+  transcriptUrl
 }) => {
   const [isPlaying, setIsPlaying] = useState(false);
   const [progress, setProgress] = useState(0);
@@ -183,11 +183,11 @@ const AudioPlayer: React.FC<AudioPlayerProps> = ({
   };
 
   const handleScriptDownload = async () => {
-    if (!scriptUrl) return;
+    if (!transcriptUrl) return;
 
     try {
       // Fetch the script file from Cloudinary
-      const response = await fetch(scriptUrl);
+      const response = await fetch(transcriptUrl);
       const blob = await response.blob();
 
       // Create a temporary download link
@@ -244,11 +244,11 @@ const AudioPlayer: React.FC<AudioPlayerProps> = ({
             <Download size={14} />
             Audio
           </button>
-          {scriptUrl && (
+          {transcriptUrl && (
             <button
               onClick={handleScriptDownload}
               className="text-xs px-2 py-1 rounded bg-green-500 text-white hover:bg-green-600 transition-colors flex items-center gap-1"
-              disabled={!scriptUrl || isLoading}
+              disabled={!transcriptUrl || isLoading}
               title="Download script"
             >
               <FileText size={14} />
