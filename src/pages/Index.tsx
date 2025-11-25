@@ -19,7 +19,6 @@ interface SourceFile {
 const Index = () => {
   // 🔹 Optional demo files — include only if needed
   const includeDemoAudio = true;           // set to false to disable demo
-  const includeRegionalAudio = false;      // set to false to disable regional audio
 
   // 🔹 Build initial file list conditionally
   const initialFiles: SourceFile[] = [];
@@ -29,15 +28,6 @@ const Index = () => {
       name: 'DEMO AUDIO',
       content: 'This is a demo audio file with pre-loaded content.',
       audioUrl: 'https://res.cloudinary.com/dpyhcwi93/video/upload/v1743317667/combined_Conversation_vzkmvp.mp3'
-    });
-  }
-
-  if (includeRegionalAudio) {
-    initialFiles.push({
-      id: '2',
-      name: 'Regional Language Audio',
-      content: 'Regional language narration',
-      audioUrl: 'https://res.cloudinary.com/dpyhcwi93/video/upload/v1762101494/output_fprpaf.mp3'
     });
   }
 
