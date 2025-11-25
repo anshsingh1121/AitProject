@@ -1,6 +1,6 @@
 
 import React, { useState, useEffect, useRef } from 'react';
-import { Play, Pause, SkipBack, SkipForward } from 'lucide-react';
+import { Play, Pause, SkipBack, SkipForward, Download } from 'lucide-react';
 import { ScrollArea } from './ui/scroll-area';
 
 interface AudioPlayerProps {
@@ -10,9 +10,9 @@ interface AudioPlayerProps {
   subtitles?: string;
 }
 
-const AudioPlayer: React.FC<AudioPlayerProps> = ({ 
-  audioUrl, 
-  fileName, 
+const AudioPlayer: React.FC<AudioPlayerProps> = ({
+  audioUrl,
+  fileName,
   isLoading = false,
   subtitles = ''
 }) => {
@@ -22,7 +22,7 @@ const AudioPlayer: React.FC<AudioPlayerProps> = ({
   const audioRef = useRef<HTMLAudioElement | null>(null);
   const intervalRef = useRef<number | null>(null);
   const [activeSubtitles, setActiveSubtitles] = useState(true);
-  
+
   // For synchronized subtitles
   const [subtitleSegments, setSubtitleSegments] = useState<string[]>([]);
   const [currentSegmentIndex, setCurrentSegmentIndex] = useState(0);
@@ -36,7 +36,7 @@ const AudioPlayer: React.FC<AudioPlayerProps> = ({
         .replace(/([.!?])\s+/g, "$1\n")
         .split('\n')
         .filter(segment => segment.trim().length > 0);
-      
+
       setSubtitleSegments(segments);
       setCurrentSegmentIndex(0);
     }
@@ -84,7 +84,7 @@ const AudioPlayer: React.FC<AudioPlayerProps> = ({
     if (audioRef.current) {
       setProgress(audioRef.current.currentTime);
       setDuration(audioRef.current.duration);
-      
+
       // Update subtitle segment based on progress
       if (subtitleSegments.length > 0) {
         // Simple approach: change segment every few seconds
@@ -93,10 +93,10 @@ const AudioPlayer: React.FC<AudioPlayerProps> = ({
           Math.floor(audioRef.current.currentTime / segmentDuration),
           subtitleSegments.length - 1
         );
-        
+
         if (newSegmentIndex !== currentSegmentIndex) {
           setCurrentSegmentIndex(newSegmentIndex);
-          
+
           // Scroll the active segment into view
           if (subtitlesContainerRef.current) {
             const segments = subtitlesContainerRef.current.querySelectorAll('.subtitle-segment');
@@ -151,6 +151,35 @@ const AudioPlayer: React.FC<AudioPlayerProps> = ({
     setActiveSubtitles(!activeSubtitles);
   };
 
+  const handleDownload = async () => {
+    if (!audioUrl) return;
+
+    try {
+      // Fetch the audio file
+      const response = await fetch(audioUrl);
+      const blob = await response.blob();
+
+      // Create a temporary download link
+      const url = window.URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.href = url;
+
+      // Set filename - use the fileName prop or default to 'audio.mp3'
+      const downloadFileName = fileName.endsWith('.mp3') ? fileName : `${fileName}.mp3`;
+      link.download = downloadFileName;
+
+      // Trigger download
+      document.body.appendChild(link);
+      link.click();
+
+      // Cleanup
+      document.body.removeChild(link);
+      window.URL.revokeObjectURL(url);
+    } catch (error) {
+      console.error('Error downloading audio:', error);
+    }
+  };
+
   if (!audioUrl && !isLoading) {
     return null;
   }
@@ -160,34 +189,44 @@ const AudioPlayer: React.FC<AudioPlayerProps> = ({
       <audio key={audioUrl} ref={audioRef} onEnded={() => setIsPlaying(false)} onLoadedMetadata={updateProgress}>
         <source src={audioUrl || ''} type="audio/mpeg" />
       </audio>
-      
+
       <div className="flex items-center mb-3">
         <div className="w-8 h-8 rounded bg-podcast-medium flex-shrink-0 mr-3 flex items-center justify-center">
           <span className="text-white text-xs">AI</span>
         </div>
         <h3 className="font-medium text-gray-800 truncate">{fileName}</h3>
-        {subtitles && (
-          <button 
-            onClick={toggleSubtitles} 
-            className={`ml-auto text-xs px-2 py-1 rounded ${activeSubtitles ? 'bg-podcast-accent text-white' : 'bg-gray-200 text-gray-600'}`}
+        <div className="ml-auto flex gap-2">
+          {subtitles && (
+            <button
+              onClick={toggleSubtitles}
+              className={`text-xs px-2 py-1 rounded ${activeSubtitles ? 'bg-podcast-accent text-white' : 'bg-gray-200 text-gray-600'}`}
+            >
+              CC
+            </button>
+          )}
+          <button
+            onClick={handleDownload}
+            className="text-xs px-2 py-1 rounded bg-podcast-accent text-white hover:bg-podcast-medium transition-colors flex items-center gap-1"
+            disabled={!audioUrl || isLoading}
+            title="Download audio"
           >
-            CC
+            <Download size={14} />
+            Download
           </button>
-        )}
+        </div>
       </div>
-      
+
       {subtitles && activeSubtitles && (
         <div className="mb-3">
           <ScrollArea className="h-32 rounded-md border p-2 bg-gray-50">
             <div ref={subtitlesContainerRef} className="px-1">
               {subtitleSegments.map((segment, index) => (
-                <p 
-                  key={index} 
-                  className={`subtitle-segment py-1 transition-colors ${
-                    index === currentSegmentIndex 
-                      ? 'bg-podcast-light font-medium text-podcast-accent rounded px-1' 
+                <p
+                  key={index}
+                  className={`subtitle-segment py-1 transition-colors ${index === currentSegmentIndex
+                      ? 'bg-podcast-light font-medium text-podcast-accent rounded px-1'
                       : 'text-gray-600'
-                  }`}
+                    }`}
                 >
                   {segment}
                 </p>
@@ -196,7 +235,7 @@ const AudioPlayer: React.FC<AudioPlayerProps> = ({
           </ScrollArea>
         </div>
       )}
-      
+
       <div className="mb-3">
         <div className="slider-track">
           <div className="slider-range" style={{ width: `${(progress / (duration || 1)) * 100}%` }}></div>
@@ -211,20 +250,20 @@ const AudioPlayer: React.FC<AudioPlayerProps> = ({
           style={{ marginTop: '-4px' }}
         />
       </div>
-      
+
       <div className="flex justify-between items-center mt-4">
         <span className="text-xs text-gray-500">{formatTime(progress)}</span>
         <div className="flex items-center gap-4">
-          <button 
-            onClick={skipBackward} 
+          <button
+            onClick={skipBackward}
             className="audio-control text-gray-600 hover:text-podcast-accent"
             disabled={!audioUrl || isLoading}
           >
             <SkipBack size={20} />
           </button>
-          
-          <button 
-            onClick={handlePlayPause} 
+
+          <button
+            onClick={handlePlayPause}
             className="audio-control bg-podcast-control hover:bg-podcast-accent"
             disabled={!audioUrl || isLoading}
           >
@@ -236,9 +275,9 @@ const AudioPlayer: React.FC<AudioPlayerProps> = ({
               <Play size={20} className="ml-1" />
             )}
           </button>
-          
-          <button 
-            onClick={skipForward} 
+
+          <button
+            onClick={skipForward}
             className="audio-control text-gray-600 hover:text-podcast-accent"
             disabled={!audioUrl || isLoading}
           >
