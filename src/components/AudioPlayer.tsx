@@ -1,6 +1,6 @@
 
 import React, { useState, useEffect, useRef } from 'react';
-import { Play, Pause, SkipBack, SkipForward, Download } from 'lucide-react';
+import { Play, Pause, SkipBack, SkipForward, Download, FileText } from 'lucide-react';
 import { ScrollArea } from './ui/scroll-area';
 
 interface AudioPlayerProps {
@@ -180,6 +180,32 @@ const AudioPlayer: React.FC<AudioPlayerProps> = ({
     }
   };
 
+  const handleScriptDownload = () => {
+    if (!subtitles) return;
+
+    try {
+      // Create a blob from the subtitles text
+      const blob = new Blob([subtitles], { type: 'text/plain' });
+      const url = window.URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.href = url;
+
+      // Set filename - remove .mp3 extension if present and add .txt
+      const scriptFileName = fileName.replace(/\.mp3$/, '') + '_script.txt';
+      link.download = scriptFileName;
+
+      // Trigger download
+      document.body.appendChild(link);
+      link.click();
+
+      // Cleanup
+      document.body.removeChild(link);
+      window.URL.revokeObjectURL(url);
+    } catch (error) {
+      console.error('Error downloading script:', error);
+    }
+  };
+
   if (!audioUrl && !isLoading) {
     return null;
   }
@@ -211,8 +237,19 @@ const AudioPlayer: React.FC<AudioPlayerProps> = ({
             title="Download audio"
           >
             <Download size={14} />
-            Download
+            Audio
           </button>
+          {subtitles && (
+            <button
+              onClick={handleScriptDownload}
+              className="text-xs px-2 py-1 rounded bg-green-500 text-white hover:bg-green-600 transition-colors flex items-center gap-1"
+              disabled={isLoading}
+              title="Download script"
+            >
+              <FileText size={14} />
+              Script
+            </button>
+          )}
         </div>
       </div>
 
@@ -224,8 +261,8 @@ const AudioPlayer: React.FC<AudioPlayerProps> = ({
                 <p
                   key={index}
                   className={`subtitle-segment py-1 transition-colors ${index === currentSegmentIndex
-                      ? 'bg-podcast-light font-medium text-podcast-accent rounded px-1'
-                      : 'text-gray-600'
+                    ? 'bg-podcast-light font-medium text-podcast-accent rounded px-1'
+                    : 'text-gray-600'
                     }`}
                 >
                   {segment}
