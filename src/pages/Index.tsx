@@ -19,7 +19,7 @@ interface SourceFile {
 const Index = () => {
   // 🔹 Optional demo files — include only if needed
   const includeDemoAudio = true;           // set to false to disable demo
-  const includeRegionalAudio = true;       // set to false to disable regional audio
+  const includeRegionalAudio = false;      // set to false to disable regional audio
 
   // 🔹 Build initial file list conditionally
   const initialFiles: SourceFile[] = [];
