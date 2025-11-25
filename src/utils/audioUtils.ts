@@ -5,6 +5,7 @@ const API_ENDPOINT = 'https://echo-backend-623078948634.europe-west1.run.app/api
 export interface ConversionResult {
   success: boolean;
   audioUrl?: string;
+  scriptUrl?: string;
   title?: string;
   requestId?: string;
   error?: string;
@@ -21,7 +22,7 @@ export const uploadFileForConversion = async (file: File, hostUrl: string = 'str
     const formData = new FormData();
     formData.append('file', file);
     formData.append('host_url', hostUrl);
-    
+
     const response = await fetch(API_ENDPOINT, {
       method: 'POST',
       headers: {
@@ -29,17 +30,18 @@ export const uploadFileForConversion = async (file: File, hostUrl: string = 'str
       },
       body: formData,
     });
-    
+
     if (!response.ok) {
       throw new Error(`HTTP error! status: ${response.status}`);
     }
-    
+
     const data = await response.json();
-    
+
     if (data.success && data.audioUrl) {
       return {
         success: true,
         audioUrl: data.audioUrl,
+        scriptUrl: data.scriptUrl,
         title: data.title,
         requestId: data.requestId,
       };
@@ -62,7 +64,7 @@ export const uploadFileForConversion = async (file: File, hostUrl: string = 'str
 export const convertTextToSpeech = async (text: string): Promise<ConversionResult> => {
   // Simulate a delay like we're waiting for the server to process
   await new Promise(resolve => setTimeout(resolve, 2000));
-  
+
   try {
     // Legacy demo audio
     return {

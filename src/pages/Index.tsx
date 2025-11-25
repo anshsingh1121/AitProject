@@ -11,6 +11,7 @@ interface SourceFile {
   name: string;
   content: string;
   audioUrl?: string;
+  scriptUrl?: string;
   title?: string;
   requestId?: string;
 }
@@ -100,6 +101,7 @@ const Index = () => {
           name: file.name,
           content: result.title || file.name,
           audioUrl: result.audioUrl,
+          scriptUrl: result.scriptUrl,
           title: result.title,
           requestId: result.requestId
         };
@@ -145,6 +147,7 @@ const Index = () => {
   const activeFile = activeFileId ? files.find(file => file.id === activeFileId) : null;
   const activeFileName = activeFile?.name || 'Audio';
   const activeContent = activeFile?.content || '';
+  const activeScriptUrl = activeFile?.scriptUrl;
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-white to-podcast-light">
@@ -165,6 +168,7 @@ const Index = () => {
             fileName={activeFileName}
             isLoading={isConverting}
             subtitles={activeContent}
+            scriptUrl={activeScriptUrl}
           />
         </main>
       </div>
