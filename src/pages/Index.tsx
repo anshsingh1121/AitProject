@@ -23,23 +23,30 @@ const Index = () => {
   // 🔹 Build initial file list conditionally
   const initialFiles: SourceFile[] = [];
   if (includeDemoAudio) {
-    initialFiles.push({
-      id: '1',
-      name: 'DEMO AUDIO',
-      content: 'This is a demo audio file with pre-loaded content.',
-      audioUrl: 'https://res.cloudinary.com/dpyhcwi93/video/upload/v1743317667/combined_Conversation_vzkmvp.mp3'
-    });
+    initialFiles.push(
+      {
+        id: '1',
+        name: 'DEMO AUDIO',
+        content: 'This is a demo audio file with pre-loaded content.',
+        audioUrl: 'https://res.cloudinary.com/dpyhcwi93/video/upload/v1743317667/combined_Conversation_vzkmvp.mp3'
+      },
+      {
+        id: '2',
+        name: 'CLONE SAMPLE',
+        content: 'This is a demo audio file with pre-loaded content.',
+        audioUrl: 'https://res.cloudinary.com/dpyhcwi93/video/upload/v1777749380/clone_sample_dwx5w0.mp3'
+      }
+    );
   }
 
   const [files, setFiles] = useState<SourceFile[]>(initialFiles);
-  const [activeFileId, setActiveFileId] = useState<string | null>(initialFiles[0]?.id || null); // 🔹 handle empty case
+  const [activeFileId, setActiveFileId] = useState<string | null>(initialFiles[0]?.id || null);
   const [audioUrl, setAudioUrl] = useState<string | null>(initialFiles[0]?.audioUrl || null);
   const [isConverting, setIsConverting] = useState(false);
 
   useEffect(() => {
     if (files.length === 0) return;
 
-    // 🔹 automatically pick last audio file if available
     const audioFiles = files.filter(file => file.audioUrl);
     if (audioFiles.length > 0) {
       const lastAudioFile = audioFiles[audioFiles.length - 1];
@@ -82,7 +89,6 @@ const Index = () => {
       setIsConverting(true);
       setAudioUrl(null);
 
-      // Upload file to the API
       const result = await uploadFileForConversion(file);
 
       if (result.success && result.audioUrl) {
